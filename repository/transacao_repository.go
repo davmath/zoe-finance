@@ -142,3 +142,46 @@ func executarConsulta(query string, args []interface{}) ([]models.Transacao, err
 
 	return transacoes, nil
 }
+
+func CriarTransacao(t models.Transacao) (int, error) {
+	query := `
+			INSERT INTO finance.tb_transacoes (
+				descricao,
+				valor,
+				data_transacao,
+				id_categoria,
+				id_subcategoria,
+				id_responsavel,
+				id_conta_bancaria,
+				id_cartao_credito,
+				id_conta_destino,
+				id_compra_parcelada,
+				efetivada
+			) VALUES (
+				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11 
+			) RETURNING id
+	`
+
+	var idGerado int
+
+	err := database.DB.QueryRow(
+		query,
+		t.Descricao,
+		t.Valor,
+		t.DataTransacao,
+		t.IDCategoria,
+		t.IDSubcategoria,
+		t.IDResponsavel,
+		t.IDContaBancaria,
+		t.IDCartaoCredito,
+		t.IDContaDestino,
+		t.IDCompraParcelada,
+		t.Efetivada,
+	).Scan(&idGerado)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return idGerado, nil
+}

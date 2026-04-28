@@ -18,8 +18,7 @@ func main() {
 
 	database.Connect()
 
-	http.HandleFunc("/transacoes", handlers.GetTransacoes)
-
+	http.HandleFunc("/transacoes", handlers.HandleTransacoes)
 	porta := ":8000"
 	fmt.Printf("API Zoe Finance started at %s port\n", porta)
 

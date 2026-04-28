@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func GetTransacoes(w http.ResponseWriter, r *http.Request){
+func getTransacoes(w http.ResponseWriter, r *http.Request){
 	
 	if r.Method != http.MethodGet{
 		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
@@ -107,4 +107,44 @@ func GetTransacoes(w http.ResponseWriter, r *http.Request){
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(transacoes)
 
+}
+
+func createTransacao(w http.ResponseWriter, r *http.Request) {
+	var novaTransacao models.Transacao
+
+	err := json.NewDecoder(r.Body).Decode(&novaTransacao)
+	if err != nil {
+		http.Error(w, "JSON inválido: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if novaTransacao.DataTransacao.IsZero() {
+		novaTransacao.DataTransacao = time.Now()
+	}
+
+	idGerado, err := repository.CriarTransacao(novaTransacao) 
+	if err != nil {
+		http.Error(w, "Erro ao inserir no banco: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resposta := map[string]interface{}{
+		"mensagem": "Transação criada com sucesso",
+		"id": idGerado,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(resposta)
+}
+
+func HandleTransacoes(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		getTransacoes(w, r)
+	case http.MethodPost:
+		createTransacao(w, r)
+	default:
+		http.Error(w, "Método HTTP não suportado", http.StatusMethodNotAllowed)
+	}
 }
