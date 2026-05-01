@@ -154,13 +154,37 @@ func patchTransacao(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 3. Validação de Segurança: Impede alteração do ID
 	delete(dados, "id")
 
-	// 4. Executa a atualização
 	err = repository.AtualizarTransacao(id, dados)
 	if err != nil {
 		http.Error(w, "Erro ao atualizar: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func deleteTransacao(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		http.Error(w, "ID é obrigatório", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Formato de ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	err = repository.DeletarTransacao(id)
+	if err != nil {
+		if err.Error() == "registro_nao_encontrado" {
+			http.Error(w, "Transação não encontrada", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Erro ao deletar: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -174,6 +198,8 @@ func HandleTransacoes(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		createTransacao(w, r)
 	case http.MethodPatch:
+		patchTransacao(w, r)
+	case http.MethodDelete:
 		patchTransacao(w, r)
 	default:
 		http.Error(w, "Método HTTP não suportado", http.StatusMethodNotAllowed)

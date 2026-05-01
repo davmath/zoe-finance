@@ -3,6 +3,7 @@ package repository
 import (
 	"davmath/zoe-finance/database"
 	"davmath/zoe-finance/models"
+	"errors"
 	"fmt"
 )
 
@@ -208,3 +209,24 @@ func AtualizarTransacao(id int, campos map[string]interface{}) error {
 	_, err := database.DB.Exec(query, args...)
 	return err
 }
+
+func DeletarTransacao(id int) error {
+	query := "DELETE FROM finance.TB_TRANSACOES WHERE id = $1"
+
+	resultado, err := database.DB.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	linhasAfetadas, err := resultado.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if linhasAfetadas == 0 {
+		return errors.New("registro_nao_encontrado")
+	}
+
+	return nil
+}
+
