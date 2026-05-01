@@ -138,12 +138,43 @@ func createTransacao(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resposta)
 }
 
+func patchTransacao(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		http.Error(w, "ID é obrigatório.", http.StatusBadRequest)
+		return
+	}
+
+	id, _ := strconv.Atoi(idStr)
+
+	var dados map[string]interface{}
+	err := json.NewDecoder(r.Body).Decode(&dados)
+	if err != nil {
+		http.Error(w, "JSON inválido", http.StatusBadRequest)
+		return
+	}
+
+	// 3. Validação de Segurança: Impede alteração do ID
+	delete(dados, "id")
+
+	// 4. Executa a atualização
+	err = repository.AtualizarTransacao(id, dados)
+	if err != nil {
+		http.Error(w, "Erro ao atualizar: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func HandleTransacoes(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		getTransacoes(w, r)
 	case http.MethodPost:
 		createTransacao(w, r)
+	case http.MethodPatch:
+		patchTransacao(w, r)
 	default:
 		http.Error(w, "Método HTTP não suportado", http.StatusMethodNotAllowed)
 	}

@@ -185,3 +185,26 @@ func CriarTransacao(t models.Transacao) (int, error) {
 
 	return idGerado, nil
 }
+
+func AtualizarTransacao(id int, campos map[string]interface{}) error {
+	if len(campos) == 0 {
+		return nil
+	}
+
+	query := "UPDATE finance.tb_transacoes SET "
+	var args []interface{}
+	paramID := 1
+
+	for coluna, valor := range campos {
+		query += fmt.Sprintf("%s = %d, ", coluna, paramID)
+		args = append(args, valor)
+		paramID++
+	}
+
+	query = query[:len(query) - 2]
+	query += fmt.Sprintf(" WHERE id = $%d", paramID)
+	args = append(args, id)
+
+	_, err := database.DB.Exec(query, args...)
+	return err
+}
