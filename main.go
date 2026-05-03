@@ -25,13 +25,20 @@ func main() {
 	}
 
 	database.Connect()
+
 	http.HandleFunc("/swagger/", httpSwagger.WrapHandler)
 	http.HandleFunc("/transacoes", handlers.HandleTransacoes)
 	http.HandleFunc("/responsaveis", handlers.HandleResponsavelConta)
 	http.HandleFunc("/compras-parceladas", handlers.HandleComprasParceladas)
 	http.HandleFunc("/cartoes-credito", handlers.HandleCartoesCredito)
-
+	http.HandleFunc("/contas-bancarias", handlers.HandleContasBancarias)
+	http.HandleFunc("/categorias", handlers.HandleCategorias)
+	http.HandleFunc("/subcategorias", handlers.HandleSubcategorias)
+	http.HandleFunc("/dashboard/resumo", handlers.HandleDashboardResumo)
+	http.HandleFunc("/dashboard/despesas-categoria", handlers.HandleDashboardDespesasCategoria)
+	
 	porta := ":8000"
+
 	fmt.Printf("API Zoe Finance started at %s port\n", porta)
 
 	log.Fatal(http.ListenAndServe(porta, nil))

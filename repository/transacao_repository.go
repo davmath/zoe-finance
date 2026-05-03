@@ -9,98 +9,126 @@ import (
 
 func BuscarTransacoes(filtro models.FiltroTransacao) ([]models.Transacao, error) {
 	query := `
-			SELECT
-				ID,
-				DESCRICAO,
-				VALOR,
-				DATA_TRANSACAO,
-				ID_CATEGORIA,
-				ID_SUBCATEGORIA,
-				ID_RESPONSAVEL,
-				ID_CONTA_BANCARIA,
-				ID_CARTAO_CREDITO,
-				ID_CONTA_DESTINO,
-				ID_COMPRA_PARCELADA,
-				EFETIVADA
-			FROM finance.TB_TRANSACOES
-			WHERE 1=1
+		SELECT 
+			t.id, 
+			t.descricao, 
+			t.valor, 
+			t.data_transacao, 
+			t.efetivada,
+			t.id_categoria, c.nome_categoria,
+			t.id_subcategoria, s.nome_subcategoria,
+			t.id_responsavel, r.nome,
+			t.id_conta_bancaria, cb.nome,
+			t.id_cartao_credito, cc.nome,
+			t.id_conta_destino, cd.nome,
+			t.id_compra_parcelada, cp.descricao
+		FROM finance.tb_transacoes t
+		LEFT JOIN finance.tb_categorias c ON t.id_categoria = c.id
+		LEFT JOIN finance.tb_subcategorias s ON t.id_subcategoria = s.id
+		LEFT JOIN finance.tb_responsavel_conta r ON t.id_responsavel = r.id
+		LEFT JOIN finance.tb_contas_bancarias cb ON t.id_conta_bancaria = cb.id
+		LEFT JOIN finance.tb_cartao_credito cc ON t.id_cartao_credito = cc.id
+		LEFT JOIN finance.tb_contas_bancarias cd ON t.id_conta_destino = cd.id
+		LEFT JOIN finance.tb_compras_parceladas cp ON t.id_compra_parcelada = cp.id
+		WHERE 1=1
 	`
 
 	var args []interface{}
 	paramID := 1
 
 	if filtro.Descricao != nil {
-		query += fmt.Sprintf(" AND DESCRICAO ILIKE $%d", paramID)
+		query += fmt.Sprintf(" AND t.descricao ILIKE $%d", paramID)
 		args = append(args, "%"+*filtro.Descricao+"%")
 		paramID++
 	}
 
 	if filtro.ValorMin != nil {
-		query += fmt.Sprintf(" AND VALOR >= $%d", paramID)
+		query += fmt.Sprintf(" AND t.valor >= $%d", paramID)
 		args = append(args, *filtro.ValorMin)
 		paramID++
 	}
 
 	if filtro.ValorMax != nil {
-		query += fmt.Sprintf(" AND VALOR <= $%d", paramID)
+		query += fmt.Sprintf(" AND t.valor <= $%d", paramID)
 		args = append(args, *filtro.ValorMax)
 		paramID++
 	}
 
 	if filtro.DataInicio != nil {
-		query += fmt.Sprintf(" AND DATA_TRANSACAO >= $%d", paramID)
+		query += fmt.Sprintf(" AND t.data_transacao >= $%d", paramID)
 		args = append(args, *filtro.DataInicio)
 		paramID++
 	}
 
 	if filtro.DataFim != nil {
-		query += fmt.Sprintf(" AND DATA_TRANSACAO <= $%d", paramID)
+		query += fmt.Sprintf(" AND t.data_transacao <= $%d", paramID)
 		args = append(args, *filtro.DataFim)
+		paramID++
 	}
 
 	if filtro.IDCategoria != nil {
-		query += fmt.Sprintf(" AND id_categoria = $%d", paramID)
+		query += fmt.Sprintf(" AND t.id_categoria = $%d", paramID)
 		args = append(args, *filtro.IDCategoria)
 		paramID++
 	}
+
 	if filtro.IDResponsavel != nil {
-		query += fmt.Sprintf(" AND id_responsavel = $%d", paramID)
+		query += fmt.Sprintf(" AND t.id_responsavel = $%d", paramID)
 		args = append(args, *filtro.IDResponsavel)
-		paramID++
-	}
-	if filtro.Efetivada != nil {
-		query += fmt.Sprintf(" AND efetivada = $%d", paramID)
-		args = append(args, *filtro.Efetivada)
 		paramID++
 	}
 
 	if filtro.IDContaBancaria != nil {
-		query += fmt.Sprintf(" AND ID_CONTA_BANCARIA = $%d", paramID)
+		query += fmt.Sprintf(" AND t.id_conta_bancaria = $%d", paramID)
 		args = append(args, *filtro.IDContaBancaria)
 		paramID++
 	}
 
 	if filtro.IDCartaoCredito != nil {
-		query += fmt.Sprintf(" AND ID_CARTAO_CREDITO = $%d", paramID)
+		query += fmt.Sprintf(" AND t.id_cartao_credito = $%d", paramID)
 		args = append(args, *filtro.IDCartaoCredito)
 		paramID++
 	}
 
-	if filtro.IDContaDestino != nil {
-		query += fmt.Sprintf(" AND ID_CONTA_DESTINO = $%d", paramID)
-		args = append(args, *filtro.IDContaDestino)
-		paramID++
+	query += " ORDER BY t.data_transacao DESC"
+
+	rows, err := database.DB.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var transacoes []models.Transacao
+
+	for rows.Next() {
+		var t models.Transacao
+		
+		err := rows.Scan(
+			&t.ID, 
+			&t.Descricao, 
+			&t.Valor, 
+			&t.DataTransacao, 
+			&t.Efetivada,
+			&t.IDCategoria, &t.NomeCategoria,
+			&t.IDSubcategoria, &t.NomeSubcategoria,
+			&t.IDResponsavel, &t.NomeResponsavel,
+			&t.IDContaBancaria, &t.NomeContaBancaria,
+			&t.IDCartaoCredito, &t.NomeCartaoCredito,
+			&t.IDContaDestino, &t.NomeContaDestino,
+			&t.IDCompraParcelada, &t.DescCompraParcelada,
+		)
+		
+		if err != nil {
+			return nil, err
+		}
+		transacoes = append(transacoes, t)
 	}
 
-	if filtro.IDCompraParcelada != nil {
-		query += fmt.Sprintf(" AND ID_COMPRA_PARCELADA = $%d", paramID)
-		args = append(args, *filtro.IDCompraParcelada)
-		paramID++
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
-	query += " ORDER BY DATA_TRANSACAO DESC"
-
-	return executarConsulta(query, args)
+	return transacoes, nil
 }
 
 func executarConsulta(query string, args []interface{}) ([]models.Transacao, error) {

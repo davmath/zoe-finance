@@ -3,15 +3,23 @@ package models
 import "time"
 
 type CompraParcelada struct {
-	ID             int       `json:"id"`
-	Descricao      string    `json:"descricao"`
-	ValorTotal     float64   `json:"valor_total"`
-	QtdParcelas    int       `json:"qtd_parcelas"`
-	DataCompra     time.Time `json:"data_compra"`
-	IDCartao       int       `json:"id_cartao"`
-	IDCategoria    int       `json:"id_categoria"`
-	IDResponsavel  int       `json:"id_responsavel"`
-	IDSubcategoria *int      `json:"id_subcategoria"`
+	ID               int       `json:"id"`
+	Descricao        string    `json:"descricao"`
+	ValorTotal       float64   `json:"valor_total"`
+	QtdParcelas      int       `json:"qtd_parcelas"`
+	DataCompra       time.Time `json:"data_compra"`
+	
+	IDCartao         int       `json:"id_cartao"`
+	NomeCartao       *string   `json:"cartao_nome,omitempty"`
+	
+	IDCategoria      int       `json:"id_categoria"`
+	NomeCategoria    *string   `json:"categoria_nome,omitempty"`
+	
+	IDResponsavel    int       `json:"id_responsavel"`
+	NomeResponsavel  *string   `json:"responsavel_nome,omitempty"`
+	
+	IDSubcategoria   *int      `json:"id_subcategoria"`
+	NomeSubcategoria *string   `json:"subcategoria_nome,omitempty"`
 }
 
 type FiltroCompraParcelada struct {

@@ -7,9 +7,16 @@ import (
 
 func BuscarCartoesCredito() ([]models.CartaoCredito, error) {
 	query := `
-		SELECT id, nome, dia_fechamento, dia_vencimento, limite, id_responsavel 
-		FROM finance.tb_cartao_credito 
-		ORDER BY id
+		SELECT 
+			cc.id, 
+			cc.nome, 
+			cc.dia_fechamento, 
+			cc.dia_vencimento, 
+			cc.limite, 
+			cc.id_responsavel, r.nome 
+		FROM finance.tb_cartao_credito cc
+		LEFT JOIN finance.tb_responsavel_conta r ON cc.id_responsavel = r.id
+		ORDER BY cc.id
 	`
 
 	rows, err := database.DB.Query(query)
@@ -29,6 +36,7 @@ func BuscarCartoesCredito() ([]models.CartaoCredito, error) {
 			&c.DiaVencimento, 
 			&c.Limite, 
 			&c.IDResponsavel,
+			&c.NomeResponsavel,
 		)
 		if err != nil {
 			return nil, err
