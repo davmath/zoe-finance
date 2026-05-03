@@ -1,0 +1,97 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API para gerenciamento de finanças.",
+        "title": "Zoe Finance API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8000",
+    "basePath": "/",
+    "paths": {
+        "/transacoes": {
+            "post": {
+                "description": "Insere uma nova transação financeira no banco de dados",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transacoes"
+                ],
+                "summary": "Cadastrar nova transação",
+                "parameters": [
+                    {
+                        "description": "Dados da Transação",
+                        "name": "transacao",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Transacao"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "JSON inválido",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.Transacao": {
+            "type": "object",
+            "properties": {
+                "data_transacao": {
+                    "type": "string"
+                },
+                "descricao": {
+                    "type": "string"
+                },
+                "efetivada": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "id_cartao_credito": {
+                    "type": "integer"
+                },
+                "id_categoria": {
+                    "type": "integer"
+                },
+                "id_compra_parcelada": {
+                    "type": "integer"
+                },
+                "id_conta_bancaria": {
+                    "type": "integer"
+                },
+                "id_conta_destino": {
+                    "type": "integer"
+                },
+                "id_responsavel": {
+                    "type": "integer"
+                },
+                "id_subcategoria": {
+                    "type": "integer"
+                },
+                "valor": {
+                    "type": "number"
+                }
+            }
+        }
+    }
+}

@@ -109,6 +109,16 @@ func getTransacoes(w http.ResponseWriter, r *http.Request){
 
 }
 
+// createTransacao godoc
+// @Summary      Cadastrar nova transação
+// @Description  Insere uma nova transação financeira no banco de dados
+// @Tags         transacoes
+// @Accept       json
+// @Produce      json
+// @Param        transacao  body      models.Transacao  true  "Dados da Transação"
+// @Success      201        {object}  map[string]interface{}
+// @Failure      400        {string}  string "JSON inválido"
+// @Router       /transacoes [post]
 func createTransacao(w http.ResponseWriter, r *http.Request) {
 	var novaTransacao models.Transacao
 

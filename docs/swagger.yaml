@@ -1,0 +1,64 @@
+basePath: /
+definitions:
+  models.Transacao:
+    properties:
+      data_transacao:
+        type: string
+      descricao:
+        type: string
+      efetivada:
+        type: boolean
+      id:
+        type: integer
+      id_cartao_credito:
+        type: integer
+      id_categoria:
+        type: integer
+      id_compra_parcelada:
+        type: integer
+      id_conta_bancaria:
+        type: integer
+      id_conta_destino:
+        type: integer
+      id_responsavel:
+        type: integer
+      id_subcategoria:
+        type: integer
+      valor:
+        type: number
+    type: object
+host: localhost:8000
+info:
+  contact: {}
+  description: API para gerenciamento de finanças.
+  title: Zoe Finance API
+  version: "1.0"
+paths:
+  /transacoes:
+    post:
+      consumes:
+      - application/json
+      description: Insere uma nova transação financeira no banco de dados
+      parameters:
+      - description: Dados da Transação
+        in: body
+        name: transacao
+        required: true
+        schema:
+          $ref: '#/definitions/models.Transacao'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: JSON inválido
+          schema:
+            type: string
+      summary: Cadastrar nova transação
+      tags:
+      - transacoes
+swagger: "2.0"
